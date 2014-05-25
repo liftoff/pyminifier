@@ -159,7 +159,7 @@ further by obfuscating the code.  What that means is that it will replace the
 names of things like variables and functions to the smallest possible size.
 
 To see more examples of pyminifier in action (e.g. compression features) see the
-`full documentation <https://github.com/liftoff/pyminifier>`_
+`full documentation <http://liftoff.github.io/pyminifier/>`_
 
 Special Sauce
 -------------
@@ -210,4 +210,4 @@ Yes, that code actually works *but only using Python 3*.  This is because Python
     *really* hard to figure out things like indentation levels and whatnot!
 
 There's even more ways to mess with people in the
-`full documentation <https://github.com/liftoff/pyminifier>`_
+`full documentation <http://liftoff.github.io/pyminifier/>`_
