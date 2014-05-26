@@ -415,7 +415,7 @@ def main():
         result += "\n# Created by pyminifier.py\n"
         # Either save the result to the output file or print it to stdout
         if options.outfile:
-            f = open(options.outfile, 'w')
+            f = open(options.outfile, 'w', encoding='utf-8')
             f.write(result)
             f.close()
             new_filesize = os.path.getsize(options.outfile)

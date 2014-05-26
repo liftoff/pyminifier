@@ -29,6 +29,7 @@ def obfuscation_machine(use_unicode=False, count=1):
     # Same thing but ALL CAPS:
     uppercase = list(map(chr, range(65, 90)))
     if use_unicode:
+        # TODO: Modify this to use unicodedata.category() and truly random characters
         # Python 3 lets us have some *real* fun:
         arabic = list(map(chr, range(1580, 1594)))
         arabic2 = list(map(chr, range(1656, 1663)))
