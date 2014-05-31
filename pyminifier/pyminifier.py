@@ -5,9 +5,9 @@
 #
 
 # Meta
-__version__ = '2.0'
+__version__ = '2.1'
 __license__ = "GPLv3" # see LICENSE.txt
-__version_info__ = (2, 0)
+__version_info__ = (2, 1)
 __author__ = 'Dan McDougall <daniel.mcdougall@liftoffsoftware.com>'
 
 # TODO: Add the ability to mark variables, functions, classes, and methods for non-obfuscation.
@@ -319,7 +319,7 @@ def main():
             if options.use_nonlatin:
                 if sys.version_info[0] == 3:
                     name_generator = obfuscate.obfuscation_machine(
-                        use_unicode=True, count=identifier_length
+                        use_unicode=True, identifier_length=identifier_length
                     )
                 else:
                     print(
@@ -327,7 +327,7 @@ def main():
                     sys.exit(2)
             else:
                 name_generator = obfuscate.obfuscation_machine(
-                    count=identifier_length)
+                    identifier_length=identifier_length)
             table =[{}]
         cumulative_size = 0 # For size reduction stats
         cumulative_new = 0 # Ditto
@@ -401,7 +401,7 @@ def main():
            or options.obf_import_methods:
             identifier_length = int(options.replacement_length)
             name_generator = obfuscate.obfuscation_machine(
-                count=identifier_length)
+                identifier_length=identifier_length)
             obfuscate.obfuscate(module, tokens, options)
         # Convert back to text
         result = token_utils.untokenize(tokens)
@@ -412,7 +412,7 @@ def main():
             result = compression.gz_pack(result)
         elif lzma and options.lzma:
             result = compression.lzma_pack(result)
-        result += "\n# Created by pyminifier.py\n"
+        result += "# Created by pyminifier.py\n"
         # Either save the result to the output file or print it to stdout
         if options.outfile:
             f = open(options.outfile, 'w', encoding='utf-8')

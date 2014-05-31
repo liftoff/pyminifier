@@ -199,10 +199,15 @@ def reduce_operators(source):
             # left alone:
             start_of_line_types = [ # These indicate we're starting a new line
                 tokenize.NEWLINE, tokenize.DEDENT, tokenize.INDENT]
+            prev_tok_string = prev_token[1]
             if prev_toktype not in start_of_line_types:
-                # This is just a regular operator; remove spaces
-                remove_columns.append(start_col) # Before OP
-                remove_columns.append(end_col+1) # After OP
+                if token_string == '.' and prev_tok_string != 'from':
+                    # This is just a regular operator; remove spaces
+                    remove_columns.append(start_col) # Before OP
+                    remove_columns.append(end_col+1) # After OP
+                else:
+                    remove_columns.append(start_col) # Before OP
+                    remove_columns.append(end_col+1) # After OP
         if token_string.endswith('\n'):
             out_line += token_string
             if remove_columns:
@@ -275,7 +280,6 @@ def join_multiline_pairs(text, pair="()"):
     closer_regex = re.compile('\%s' % closer)
 
     output = ""
-
     for line in text.split('\n'):
         escaped = False
         # First we rule out multi-line strings

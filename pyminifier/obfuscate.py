@@ -5,47 +5,75 @@ __doc__ = """\
 A collection of functions for obfuscating code.
 """
 
-import os, tokenize, keyword, sys
+import os, sys, tokenize, keyword, sys, unicodedata
+from random import shuffle, choice
 from itertools import permutations
 
 # Import our own modules
 from . import analyze
 from . import token_utils
 
-# Reserved words can be overridden by the script that imports this module
-reserved_words = keyword.kwlist + analyze.builtins
+if sys.version_info.major == 3:
+    unichr = chr # So we can support both 2 and 3
 
-def obfuscation_machine(use_unicode=False, count=1):
+try:
+    unichr(0x10000) # Will throw a ValueError on narrow Python builds
+    HIGHEST_UNICODE = 0x10FFFF # 1114111
+except:
+    HIGHEST_UNICODE = 0xFFFF # 65535
+
+# Reserved words can be overridden by the script that imports this module
+RESERVED_WORDS = keyword.kwlist + analyze.builtins
+VAR_REPLACEMENTS = {} # So we can reference what's already been replaced
+FUNC_REPLACEMENTS = {}
+CLASS_REPLACEMENTS = {}
+UNIQUE_REPLACEMENTS = {}
+
+def obfuscation_machine(use_unicode=False, identifier_length=1):
     """
     A generator that returns short sequential combinations of lower and
     upper-case letters that will never repeat.
 
-    If use_unicode is True, use nonlatin cryllic, arabic, and syriac letters
-    instead of the usual ABCs.
+    If *use_unicode* is ``True``, use nonlatin cryllic, arabic, and syriac
+    letters instead of the usual ABCs.
+
+    The *identifier_length* represents the length of the string to return using
+    the aforementioned characters.
     """
-    from random import shuffle
     # This generates a list of the letters a-z:
     lowercase = list(map(chr, range(97, 123)))
     # Same thing but ALL CAPS:
     uppercase = list(map(chr, range(65, 90)))
     if use_unicode:
-        # TODO: Modify this to use unicodedata.category() and truly random characters
         # Python 3 lets us have some *real* fun:
-        arabic = list(map(chr, range(1580, 1594)))
-        arabic2 = list(map(chr, range(1656, 1663)))
-        syriac = list(map(chr, range(1811, 1838)))
-        #dingbats = list(map(chr, range(9985, 10174))) #Python 3 doesn't like :(
-        funfun = list(map(chr, range(11704, 11710))) # Loopy!
-        combined = funfun + arabic + arabic2 + syriac
+        allowed_categories = ('LC', 'Ll', 'Lu', 'Lo', 'Lu')
+        # All the fun characters start at 1580 (hehe):
+        big_list = list(map(chr, range(1580, HIGHEST_UNICODE)))
+        max_chars = 1000 # Ought to be enough for anybody :)
+        combined = []
+        rtl_categories = ('AL', 'R') # AL == Arabic, R == Any right-to-left
+        last_orientation = 'L'       # L = Any left-to-right
+        # Find a good mix of left-to-right and right-to-left characters
+        while len(combined) < max_chars:
+            char = choice(big_list)
+            if unicodedata.category(char) in allowed_categories:
+                orientation = unicodedata.bidirectional(char)
+                if last_orientation in rtl_categories:
+                    if orientation not in rtl_categories:
+                        combined.append(char)
+                else:
+                    if orientation in rtl_categories:
+                        combined.append(char)
+                last_orientation = orientation
     else:
         combined = lowercase + uppercase
     shuffle(combined) # Randomize it all to keep things interesting
     while True:
-        for perm in permutations(combined, count):
+        for perm in permutations(combined, identifier_length):
             perm = "".join(perm)
-            if perm not in reserved_words: # Can't replace reserved words
+            if perm not in RESERVED_WORDS: # Can't replace reserved words
                 yield perm
-        count += 1
+        identifier_length += 1
 
 def apply_obfuscation(source):
     """
@@ -69,14 +97,14 @@ def apply_obfuscation(source):
         replace_obfuscatables(tokens, obfuscate_class, _class, name_generator)
     return token_utils.untokenize(tokens)
 
-def find_obfuscatables(tokens, obfunc):
+def find_obfuscatables(tokens, obfunc, ignore_length=False):
     """
     Iterates over *tokens*, which must be an equivalent output to what
     tokenize.generate_tokens() produces, calling *obfunc* on each with the
     following parameters:
 
-        - **tok:**        The current token
-        - **prev_tok:**   The previous token
+        - **tokens:**     The current list of tokens.
+        - **index:**      The current position in the list.
 
     *obfunc* is expected to return the token string if that token can be safely
     obfuscated **or** one of the following optional values which will instruct
@@ -84,30 +112,24 @@ def find_obfuscatables(tokens, obfunc):
 
         - **'__skipline__'**   Keep skipping tokens until a newline is reached.
         - **'__skipnext__'**   Skip the next token in the sequence.
+
+    If *ignore_length* is ``True`` then single-character obfuscatables will
+    be obfuscated anyway (even though it wouldn't save any space).
     """
     global keyword_args
     keyword_args = analyze.enumerate_keyword_args(tokens)
     global imported_modules
     imported_modules = analyze.enumerate_imports(tokens)
-    # Pretend the first line is '#\n':
-    prev_tok = (54, '\n', (1, 1), (1, 2), '#\n')
     skip_line = False
     skip_next = False
     obfuscatables = []
-    for count, tok in enumerate(tokens):
+    for index, tok in enumerate(tokens):
         token_type = tok[0]
-        line = tok[4]
-        try:
-            next_tok = tokens[count+1]
-        except IndexError: # Last token, no biggie
-            # Pretend it is an empty comment ending in a newline
-            next_tok = (54, '\n', (1, 1), (1, 2), '#\n')
         if token_type == tokenize.NEWLINE:
             skip_line = False
         if skip_line:
-            prev_tok = tok
             continue
-        result = obfunc(tok, next_tok, prev_tok)
+        result = obfunc(tokens, index, ignore_length=ignore_length)
         if result:
             if skip_next:
                 skip_next = False
@@ -121,23 +143,36 @@ def find_obfuscatables(tokens, obfunc):
                 obfuscatables.append(result)
         else: # If result is empty we need to reset skip_next so we don't
             skip_next = False # accidentally skip the next identifier
-        prev_tok = tok
     return obfuscatables
 
 # Note: I'm using 'tok' instead of 'token' since 'token' is a built-in module
-def obfuscatable_variable(tok, next_tok, prev_tok):
+def obfuscatable_variable(tokens, index, ignore_length=False):
     """
-    Given a token, returns the token string if it is a variable name that can
-    be safely obfuscated.
+    Given a list of *tokens* and an *index* (representing the current position),
+    returns the token string if it is a variable name that can be safely
+    obfuscated.
 
     Returns '__skipline__' if the rest of the tokens on this line should be skipped.
     Returns '__skipnext__' if the next token should be skipped.
+
+    If *ignore_length* is ``True``, even variables that are already a single
+    character will be obfuscated (typically only used with the ``--nonlatin``
+    option).
     """
+    tok = tokens[index]
     token_type = tok[0]
     token_string = tok[1]
     line = tok[4]
+    if index > 0:
+        prev_tok = tokens[index-1]
+    else: # Pretend it's a newline (for simplicity)
+        prev_tok = (54, '\n', (1, 1), (1, 2), '#\n')
     prev_tok_type = prev_tok[0]
     prev_tok_string = prev_tok[1]
+    try:
+        next_tok = tokens[index+1]
+    except IndexError: # Pretend it's a newline
+        next_tok = (54, '\n', (1, 1), (1, 2), '#\n')
     next_tok_string = next_tok[1]
     if token_string == "=":
         return '__skipline__'
@@ -161,19 +196,26 @@ def obfuscatable_variable(tok, next_tok, prev_tok):
         return '__skipline__'
     if prev_tok_type != tokenize.INDENT and '=' not in line:
         return '__skipline__'
-    if len(token_string) < 3:
-        return None
-    if token_string in reserved_words:
+    if not ignore_length:
+        if len(token_string) < 3:
+            return None
+    if token_string in RESERVED_WORDS:
         return None
     return token_string
 
-def obfuscatable_class(tok, next_tok, prev_tok):
+def obfuscatable_class(tokens, index, **kwargs):
     """
-    Given a token, returns the token string if it is a class name that can be
-    safely obfuscated.
+    Given a list of *tokens* and an *index* (representing the current position),
+    returns the token string if it is a class name that can be safely
+    obfuscated.
     """
+    tok = tokens[index]
     token_type = tok[0]
     token_string = tok[1]
+    if index > 0:
+        prev_tok = tokens[index-1]
+    else: # Pretend it's a newline (for simplicity)
+        prev_tok = (54, '\n', (1, 1), (1, 2), '#\n')
     prev_tok_string = prev_tok[1]
     if token_type != tokenize.NAME:
         return None # Skip this token
@@ -182,13 +224,19 @@ def obfuscatable_class(tok, next_tok, prev_tok):
     if prev_tok_string == "class":
         return token_string
 
-def obfuscatable_function(tok, next_tok, prev_tok):
+def obfuscatable_function(tokens, index, **kwargs):
     """
-    Given a token, returns the token string if it is a function or method name
-    that can be safely obfuscated.
+    Given a list of *tokens* and an *index* (representing the current position),
+    returns the token string if it is a function or method name that can be
+    safely obfuscated.
     """
+    tok = tokens[index]
     token_type = tok[0]
     token_string = tok[1]
+    if index > 0:
+        prev_tok = tokens[index-1]
+    else: # Pretend it's a newline (for simplicity)
+        prev_tok = (54, '\n', (1, 1), (1, 2), '#\n')
     prev_tok_string = prev_tok[1]
     if token_type != tokenize.NAME:
         return None # Skip this token
@@ -204,9 +252,8 @@ def replace_obfuscatables(module, tokens, obfunc, replace, name_generator, table
     (*replace*) by calling *obfunc* on each token with the following parameters:
 
         - **module:**       The name of the script we're currently obfuscating.
-        - **tok:**          The current token.
-        - **prev_tok:**     The previous token in the sequence.
-        - **next_tok:**     The next token in the sequence.
+        - **tokens:**       The current list of all tokens.
+        - **index:**        The current position.
         - **replace:**      The token string that we're replacing.
         - **replacement:**  A randomly generated, unique value that will be used to replace, *replace*.
         - **right_of_equal:**   A True or False value representing whether or not the token is to the right of an equal sign.  **Note:** This gets reset to False if a comma or open paren are encountered.
@@ -235,7 +282,6 @@ def replace_obfuscatables(module, tokens, obfunc, replace, name_generator, table
     with obfuscated values.
     """
     # Pretend the first line is '#\n':
-    prev_tok = (54, '\n', (1, 1), (1, 2), '#\n')
     skip_line = False
     skip_next = False
     right_of_equal = False
@@ -244,12 +290,7 @@ def replace_obfuscatables(module, tokens, obfunc, replace, name_generator, table
     indent = 0
     function_indent = 0
     replacement = next(name_generator)
-    for count, tok in enumerate(tokens):
-        try:
-            next_tok = tokens[count+1]
-        except IndexError: # Last token, no biggie
-            # Pretend it is a newline
-            next_tok = (54, '\n', (1, 1), (1, 2), '#\n')
+    for index, tok in enumerate(tokens):
         token_type = tok[0]
         token_string = tok[1]
         if token_type == tokenize.NEWLINE:
@@ -265,19 +306,17 @@ def replace_obfuscatables(module, tokens, obfunc, replace, name_generator, table
                 inside_function = False
         if token_string == "def":
             function_indent = indent
-            function_name = tokens[count+1][1]
+            function_name = tokens[index+1][1]
             inside_function = function_name
         result = obfunc(
-            tok,
-            next_tok,
-            prev_tok,
+            tokens,
+            index,
             replace,
             replacement,
             right_of_equal,
             inside_parens,
             inside_function
         )
-        prev_tok = tok
         if result:
             if skip_next:
                 skip_next = False
@@ -300,30 +339,41 @@ def replace_obfuscatables(module, tokens, obfunc, replace, name_generator, table
                 if table: # Save it for later use in other files
                     combined_name = "%s.%s" % (module, token_string)
                     try: # Attempt to use an existing value
-                        tokens[count][1] = table[0][combined_name]
+                        tokens[index][1] = table[0][combined_name]
                     except KeyError: # Doesn't exist, add it to table
                         table[0].update({combined_name: result})
-                        tokens[count][1] = result
+                        tokens[index][1] = result
                 else:
-                    tokens[count][1] = result
+                    tokens[index][1] = result
 
 def obfuscate_variable(
-        tok,
-        next_tok,
-        prev_tok,
+        tokens,
+        index,
         replace,
         replacement,
         right_of_equal,
         inside_parens,
         inside_function):
     """
-    If the token string inside *tok* matches *replace*, return *replacement*.
-    *next_tok*, *prev_tok*, *right_of_equal*, and *inside_parens* are used to
-    determine whether or not this token is safe to obfuscate.
+    If the token string inside *tokens[index]* matches *replace*, return
+    *replacement*. *right_of_equal*, and *inside_parens* are used to determine
+    whether or not this token is safe to obfuscate.
     """
+    def return_replacement(replacement):
+        VAR_REPLACEMENTS[replacement] = replace
+        return replacement
+    tok = tokens[index]
     token_type = tok[0]
     token_string = tok[1]
+    if index > 0:
+        prev_tok = tokens[index-1]
+    else: # Pretend it's a newline (for simplicity)
+        prev_tok = (54, '\n', (1, 1), (1, 2), '#\n')
     prev_tok_string = prev_tok[1]
+    try:
+        next_tok = tokens[index+1]
+    except IndexError: # Pretend it's a newline
+        next_tok = (54, '\n', (1, 1), (1, 2), '#\n')
     if token_string == "import":
         return '__skipline__'
     if next_tok[1] == '.':
@@ -348,30 +398,66 @@ def obfuscate_variable(
             if token_string not in keyword_args[inside_function]:
                 if not right_of_equal:
                     if not inside_parens:
-                        return replacement
+                        return return_replacement(replacement)
                     else:
                         if next_tok[1] != '=':
-                            return replacement
+                            return return_replacement(replacement)
                 elif not inside_parens:
-                    return replacement
+                    return return_replacement(replacement)
                 else:
                     if next_tok[1] != '=':
-                        return replacement
+                        return return_replacement(replacement)
         elif not right_of_equal:
             if not inside_parens:
-                return replacement
+                return return_replacement(replacement)
             else:
                 if next_tok[1] != '=':
-                    return replacement
+                    return return_replacement(replacement)
         elif right_of_equal and not inside_parens:
-            return replacement
+            return return_replacement(replacement)
 
-def obfuscate_function(tok, next_tok, prev_tok, replace, replacement, *args):
+def obfuscate_function(tokens, index, replace, replacement, *args):
     """
-    If the token string inside *tok* matches *replace*, return *replacement*.
+    If the token string (a function) inside *tokens[index]* matches *replace*,
+    return *replacement*.
     """
+    def return_replacement(replacement):
+        FUNC_REPLACEMENTS[replacement] = replace
+        return replacement
+    tok = tokens[index]
     token_type = tok[0]
     token_string = tok[1]
+    prev_tok = tokens[index-1]
+    prev_tok_string = prev_tok[1]
+    if token_type != tokenize.NAME:
+        return None # Skip this token
+    if token_string.startswith('__'):
+        return None
+    if token_string == replace:
+        if prev_tok_string != '.':
+            if token_string == replace:
+                return return_replacement(replacement)
+        else:
+            parent_name = tokens[index-2][1]
+            if parent_name in CLASS_REPLACEMENTS:
+                # This should work for @classmethod methods
+                return return_replacement(replacement)
+            elif parent_name in VAR_REPLACEMENTS:
+                # This covers regular ol' instance methods
+                return return_replacement(replacement)
+
+def obfuscate_class(tokens, index, replace, replacement, *args):
+    """
+    If the token string (a class) inside *tokens[index]* matches *replace*,
+    return *replacement*.
+    """
+    def return_replacement(replacement):
+        CLASS_REPLACEMENTS[replacement] = replace
+        return replacement
+    tok = tokens[index]
+    token_type = tok[0]
+    token_string = tok[1]
+    prev_tok = tokens[index-1]
     prev_tok_string = prev_tok[1]
     if token_type != tokenize.NAME:
         return None # Skip this token
@@ -379,38 +465,28 @@ def obfuscate_function(tok, next_tok, prev_tok, replace, replacement, *args):
         return None
     if prev_tok_string != '.':
         if token_string == replace:
-            return replacement
+            return return_replacement(replacement)
 
-def obfuscate_class(tok, next_tok, prev_tok, replace, replacement, *args):
+def obfuscate_unique(tokens, index, replace, replacement, *args):
     """
-    If the token string inside *tok* matches *replace*, return *replacement*.
-    """
-    token_type = tok[0]
-    token_string = tok[1]
-    prev_tok_string = prev_tok[1]
-    if token_type != tokenize.NAME:
-        return None # Skip this token
-    if token_string.startswith('__'):
-        return None
-    if prev_tok_string != '.':
-        if token_string == replace:
-            return replacement
-
-def obfuscate_unique(tok, next_tok, prev_tok, replace, replacement, *args):
-    """
-    If the token string inside *tok* matches *replace*, return *replacement*.
+    If the token string (a unique value anywhere) inside *tokens[index]*
+    matches *replace*, return *replacement*.
 
     .. note::
 
         This function is only for replacing absolutely unique ocurrences of
         *replace* (where we don't have to worry about their position).
     """
+    def return_replacement(replacement):
+        UNIQUE_REPLACEMENTS[replacement] = replace
+        return replacement
+    tok = tokens[index]
     token_type = tok[0]
     token_string = tok[1]
     if token_type != tokenize.NAME:
         return None # Skip this token
     if token_string == replace:
-        return replacement
+        return return_replacement(replacement)
 
 def remap_name(name_generator, names, table=None):
     """
@@ -585,20 +661,23 @@ def obfuscate(module, tokens, options, name_generator=None, table=None):
     """
     # Need a universal instance of our generator to avoid duplicates
     identifier_length = int(options.replacement_length)
+    ignore_length = False
     if not name_generator:
         if options.use_nonlatin:
+            ignore_length = True
             if sys.version_info[0] == 3:
                 name_generator = obfuscation_machine(
-                    use_unicode=True, count=identifier_length
+                    use_unicode=True, identifier_length=identifier_length
                 )
             else:
                 print(
                     "ERROR: You can't use nonlatin characters without Python 3")
         else:
-            name_generator = obfuscation_machine(count=identifier_length)
+            name_generator = obfuscation_machine(
+                identifier_length=identifier_length)
     if options.obfuscate:
         variables = find_obfuscatables(
-            tokens, obfuscatable_variable)
+            tokens, obfuscatable_variable, ignore_length=ignore_length)
         classes = find_obfuscatables(
             tokens, obfuscatable_class)
         functions = find_obfuscatables(
@@ -680,6 +759,6 @@ if __name__ == "__main__":
     if sys.version_info[0] == 3:
         name_generator = obfuscation_machine(use_unicode=True)
     else:
-        name_generator = obfuscation_machine(count=1)
+        name_generator = obfuscation_machine(identifier_length=1)
     source = apply_obfuscation(source)
     print(source)
