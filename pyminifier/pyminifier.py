@@ -415,7 +415,9 @@ def main():
             result = compression.gz_pack(result)
         elif lzma and options.lzma:
             result = compression.lzma_pack(result)
-        result += "# Created by pyminifier.py\n"
+        result += (
+                "# Created by pyminifier "
+                "(https://github.com/liftoff/pyminifier)\n")
         # Either save the result to the output file or print it to stdout
         if options.outfile:
             f = open(options.outfile, 'w', encoding='utf-8')

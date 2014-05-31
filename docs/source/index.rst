@@ -107,7 +107,7 @@ following totally made-up Python script (saved to ``/tmp/tumult.py``)::
         """
         def __init__(self, *args, **kwargs):
             """
-            The initialization vector whereby the ineffably obstreperous
+            The initialization vector whereby the ineffiably obstreperous
             becomes paramount.
             """
             # TODO.  BTW: What happens if we remove that docstring? :)
@@ -162,7 +162,7 @@ code to stdout:
      print("Forming...")
      f=Foo("epicaricacy","perseverate")
      f.test("Codswallop")
-    # Created by pyminifier.py
+    # Created by pyminifier.py (https://github.com/liftoff/pyminifier)
 
 This reduced the size of tumult.py from 1358 bytes to 640 bytes.  Not bad!
 
@@ -200,7 +200,7 @@ names of things like variables and functions to the smallest possible size:
      q("Forming...")
      f=U("epicaricacy","perseverate")
      f.test("Codswallop")
-    # Created by pyminifier.py
+    # Created by pyminifier.py (https://github.com/liftoff/pyminifier)
 
 That's all fine and good but pyminifier can go the extra mile and also
 *compress* your code using gzip, bz2, or even lzma using a special container:
@@ -211,7 +211,7 @@ That's all fine and good but pyminifier can go the extra mile and also
     #!/usr/bin/env python3
     import zlib, base64
     exec(zlib.decompress(base64.b64decode('eJx1kcFOwzAMhu95ClMO66apu0/KAQEbE5eJC+IUpa27haVJ5Ljb+vakLYJx4JAoiT/7/+3c3626SKvSuBW6M4Sej96Jq9y1wRM/E3kSexnIOBZObrSNKI7Sl59YsWDq1wLMiEKNrenoYCqB1woDwzXF9nn2rskZd1jDh+9mhOD8DVvAQ8WdtrZfwg74aNwp7ZpnMXHUaltk878ybR/ZNKbSjP8JPWk6wdn72ntodQ8lQucIrdGlxaHgq3QgKqtjhCY/zlN6jQ0oZZxhpfKItlkuNB3icrE4XYbDwEBICRP6NjG1rri3YyzK356CtsGwZuNd/o0kYitvrBd18qgmj3kcwoTckYPtJPAyCVzSKPCMNErs85+rMINdp1tUSspMqVYbp1Q2DWKTJpcGURRDr9DIJs8wJFlKq+qzZRaQ4lAnVRuJgjFynj36Ol7SX/iQXr8ANfezCw==')))
-    # Created by pyminifier.py
+    # Created by pyminifier.py (https://github.com/liftoff/pyminifier)
 
 That created a 572 byte file...  Not much saved over basic minification
 which producted a 640 byte file.  This is because the input file was so small
@@ -407,7 +407,7 @@ pyminifier.pyz by re-minifying tumult.py...
      print("Forming...")
      f=Foo("epicaricacy","perseverate")
      f.test("Codswallop")
-    # Created by pyminifier.py
+    # Created by pyminifier.py (https://github.com/liftoff/pyminifier)
 
 It works!
 
@@ -420,33 +420,33 @@ need is Python 3 and the ``--nonlatin`` option...
 .. code-block:: sh
 
     #!/usr/bin/env python3
-    ܗ=ImportError
-    ܡ=print
-    ܪ=False
-    ٽ=object
+    ﵛ=ImportError
+    ࡅ=print
+    㮀=False
+    搓=object
     try:
      import demiurgic
-    except ܗ:
-    ܡ("Warning: You're not demiurgic. Actually, I think that's normal.")
+    except ﵛ:
+    ࡅ("Warning: You're not demiurgic. Actually, I think that's normal.")
     try:
      import mystificate
-    except ܗ:
-    ܡ("Warning: Dark voodoo may be unreliable.")
-    ܬ=ܪ
-    class ظ(ٽ):
+    except ﵛ:
+    ࡅ("Warning: Dark voodoo may be unreliable.")
+    ﵩ=㮀
+    class רּ(搓):
      def __init__(self,*args,**kwargs):
       pass
-     def ط(self,dactyl):
-    ټ=demiurgic.palpitation(dactyl)
-      ⶹ=mystificate.dark_voodoo(ټ)
-      return ⶹ
-     def ܘ(self,whatever):
-    ܡ(whatever)
+     def 𐨱(self,dactyl):
+      ﱲ=demiurgic.palpitation(dactyl)
+      ꁁ=mystificate.dark_voodoo(ﱲ)
+      return ꁁ
+     def 𨠅(self,whatever):
+      ࡅ(whatever)
     if __name__=="__main__":
-    ܡ("Forming...")
-     f=ظ("epicaricacy","perseverate")
-     f.test("Codswallop")
-    # Created by pyminifier.py
+     ࡅ("Forming...")
+     녂=רּ("epicaricacy","perseverate")
+     녂.𨠅("Codswallop")
+    # Created by pyminifier.py (https://github.com/liftoff/pyminifier)
 
 Yes, that code actually works *but only using Python 3*.  This is because Python
 3 supports coding in languages that use non-latin character sets.
@@ -465,40 +465,35 @@ minimize the amount of characters used for replacements let's make them HUGE:
 
 .. code-block:: sh
 
-    $ pyminifier --obfuscate --nonlatin --replacement-length=50 /tmp/tumult.py
+    $ pyminifier --nonlatin --replacement-length=50 /tmp/tumult.py
     #!/usr/bin/env python3
-    ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖپ=ImportError
-    ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖخ=print
-    ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖܢ=False
-    ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖٸ=object
+    ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲמּ=ImportError
+    ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ燱=print
+    ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ巡=False
+    ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ澨=object
     try:
      import demiurgic
-    except ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖپ:
-    ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖخ("Warning: You're not demiurgic. Actually, I think that's normal.")
+    except ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲמּ:
+     ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ燱("Warning: You're not demiurgic. Actually, I think that's normal.")
     try:
      import mystificate
-    except ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖپ:
-    ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖخ("Warning: Dark voodoo may be unreliable.")
-    ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚذܖ=ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖܢ
-    class ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖذ(ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖٸ):
+    except ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲמּ:
+     ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ燱("Warning: Dark voodoo may be unreliable.")
+    ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲﺬ=ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ巡
+    class ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ𐦚(ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ澨):
      def __init__(self,*args,**kwargs):
       pass
-     def ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚذܢ(self,dactyl):
-    ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚذپ=demiurgic.palpitation(dactyl)
-    ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚذخ=mystificate.dark_voodoo(ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚذپ)
-      return ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚذخ
-     def ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚذٸ(self,whatever):
-    ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖخ(whatever)
+     def ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ클(self,dactyl):
+      ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ퐐=demiurgic.palpitation(dactyl)
+      ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ𠛲=mystificate.dark_voodoo(ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ퐐)
+      return ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ𠛲
+     def ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ𐠯(self,whatever):
+      ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ燱(whatever)
     if __name__=="__main__":
-    ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖخ("Forming...")
-     f=ܓܘܜܭطٻⶹܠدܥⶻزعܙܨܣٹܤܧܦټشܟܛضܞٽٺܕܗⶼصجܔسظܪܝⶺحⶸܫܩⶽܡرܬܚܖذ("epicaricacy","perseverate")
-     f.test("Codswallop")
-     # Created by pyminifier.py
-
-.. note::
-
-    Why was the name 'f' preserved?  Because pyminifier ignores names that are
-    already less than 2 characters.
+     ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ燱("Forming...")
+     ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲﺃ=ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ𐦚("epicaricacy","perseverate")
+     ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲﺃ.ﺭ异𞸐𐤔ﭞﰣﺁں𝕌𨿩𞸇뻛𐬑𥰫嬭ﱌ𢽁𐡆𧪮Ꝫﴹ뙫𢤴퉊ﳦﲣפּܟﺶ𐐤ﶨࠔ𐰷𢡶𧐎𐭈𞸏𢢘𦘼ﶻ𩏃𦽨𞺎𠛘𐠲䉊ﰸﭳᣲ𐠯("Codswallop")
+    # Created by pyminifier (https://github.com/liftoff/pyminifier)
 
 Indices and tables
 ==================

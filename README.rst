@@ -126,31 +126,34 @@ code to stdout:
 
 .. code-block:: sh
 
-    $ pyminifier /tmp/tumult.py
     #!/usr/bin/env python
+    ﵛ=ImportError
+    ࡅ=print
+    㮀=False
+    搓=object
     try:
      import demiurgic
-    except ImportError:
-     print("Warning: You're not demiurgic. Actually, I think that's normal.")
+    except ﵛ:
+    ࡅ("Warning: You're not demiurgic. Actually, I think that's normal.")
     try:
      import mystificate
-    except ImportError:
-     print("Warning: Dark voodoo may be unreliable.")
-    ATLAS=False
-    class Foo(object):
+    except ﵛ:
+    ࡅ("Warning: Dark voodoo may be unreliable.")
+    ﵩ=㮀
+    class רּ(搓):
      def __init__(self,*args,**kwargs):
       pass
-     def demiurgic_mystificator(self,dactyl):
-      inception=demiurgic.palpitation(dactyl)
-      demarcation=mystificate.dark_voodoo(inception)
-      return demarcation
-     def test(self,whatever):
-      print(whatever)
+     def 𐨱(self,dactyl):
+      ﱲ=demiurgic.palpitation(dactyl)
+      ꁁ=mystificate.dark_voodoo(ﱲ)
+      return ꁁ
+     def 𨠅(self,whatever):
+      ࡅ(whatever)
     if __name__=="__main__":
-     print("Forming...")
-     f=Foo("epicaricacy","perseverate")
-     f.test("Codswallop")
-    # Created by pyminifier.py
+     ࡅ("Forming...")
+     녂=רּ("epicaricacy","perseverate")
+     녂.𨠅("Codswallop")
+    # Created by pyminifier.py (https://github.com/liftoff/pyminifier)
 
 This reduced the size of tumult.py from 1358 bytes to 640 bytes.  Not bad!
 
@@ -196,7 +199,7 @@ need is Python 3 and the ``--nonlatin`` option...
     ܡ("Forming...")
      f=ظ("epicaricacy","perseverate")
      f.test("Codswallop")
-    # Created by pyminifier.py
+    # Created by pyminifier.py (https://github.com/liftoff/pyminifier)
 
 Yes, that code actually works *but only using Python 3*.  This is because Python
 3 supports coding in languages that use non-latin character sets.
