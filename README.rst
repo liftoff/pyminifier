@@ -126,6 +126,49 @@ code to stdout:
 
 .. code-block:: sh
 
+    $ pyminifier /tmp/tumult.py
+    #!/usr/bin/env python
+    try:
+     import demiurgic
+    except ImportError:
+     print("Warning: You're not demiurgic. Actually, I think that's normal.")
+    try:
+     import mystificate
+    except ImportError:
+     print("Warning: Dark voodoo may be unreliable.")
+    ATLAS=False
+    class Foo(object):
+     def __init__(self,*args,**kwargs):
+      pass
+     def demiurgic_mystificator(self,dactyl):
+      inception=demiurgic.palpitation(dactyl)
+      demarcation=mystificate.dark_voodoo(inception)
+      return demarcation
+     def test(self,whatever):
+      print(whatever)
+    if __name__=="__main__":
+     print("Forming...")
+     f=Foo("epicaricacy","perseverate")
+     f.test("Codswallop")
+    # Created by pyminifier.py
+
+This reduced the size of tumult.py from 1358 bytes to 640 bytes.  Not bad!
+
+Minifying by itself can reduce code size considerably but pyminifier can go
+further by obfuscating the code.  What that means is that it will replace the
+names of things like variables and functions to the smallest possible size.
+
+To see more examples of pyminifier in action (e.g. compression features) see the
+`full documentation <http://liftoff.github.io/pyminifier/>`_
+
+Special Sauce
+-------------
+So let's pretend for a moment that your intentions are not pure; that you
+totally want to mess with the people that look at your minified code.  What you
+need is Python 3 and the ``--nonlatin`` option...
+
+.. code-block:: sh
+
     #!/usr/bin/env python
     ﵛ=ImportError
     ࡅ=print
@@ -153,52 +196,6 @@ code to stdout:
      ࡅ("Forming...")
      녂=רּ("epicaricacy","perseverate")
      녂.𨠅("Codswallop")
-    # Created by pyminifier.py (https://github.com/liftoff/pyminifier)
-
-This reduced the size of tumult.py from 1358 bytes to 640 bytes.  Not bad!
-
-Minifying by itself can reduce code size considerably but pyminifier can go
-further by obfuscating the code.  What that means is that it will replace the
-names of things like variables and functions to the smallest possible size.
-
-To see more examples of pyminifier in action (e.g. compression features) see the
-`full documentation <http://liftoff.github.io/pyminifier/>`_
-
-Special Sauce
--------------
-So let's pretend for a moment that your intentions are not pure; that you
-totally want to mess with the people that look at your minified code.  What you
-need is Python 3 and the ``--nonlatin`` option...
-
-.. code-block:: sh
-
-    #!/usr/bin/env python3
-    ܗ=ImportError
-    ܡ=print
-    ܪ=False
-    ٽ=object
-    try:
-     import demiurgic
-    except ܗ:
-    ܡ("Warning: You're not demiurgic. Actually, I think that's normal.")
-    try:
-     import mystificate
-    except ܗ:
-    ܡ("Warning: Dark voodoo may be unreliable.")
-    ܬ=ܪ
-    class ظ(ٽ):
-     def __init__(self,*args,**kwargs):
-      pass
-     def ط(self,dactyl):
-    ټ=demiurgic.palpitation(dactyl)
-      ⶹ=mystificate.dark_voodoo(ټ)
-      return ⶹ
-     def ܘ(self,whatever):
-    ܡ(whatever)
-    if __name__=="__main__":
-    ܡ("Forming...")
-     f=ظ("epicaricacy","perseverate")
-     f.test("Codswallop")
     # Created by pyminifier.py (https://github.com/liftoff/pyminifier)
 
 Yes, that code actually works *but only using Python 3*.  This is because Python
