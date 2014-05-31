@@ -95,7 +95,7 @@ following totally made-up Python script (saved to ``/tmp/tumult.py``)::
         """
         def __init__(self, *args, **kwargs):
             """
-            The initialization vector whereby the ineffiably obstreperous
+            The initialization vector whereby the ineffably obstreperous
             becomes paramount.
             """
             # TODO.  BTW: What happens if we remove that docstring? :)
