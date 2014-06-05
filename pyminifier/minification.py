@@ -164,7 +164,6 @@ def remove_comments_and_docstrings(source):
 def reduce_operators(source):
     """
     Remove spaces between operators in *source* and returns the result.
-
     Example::
 
         def foo(foo, bar, blah):
@@ -205,9 +204,9 @@ def reduce_operators(source):
                     # This is just a regular operator; remove spaces
                     remove_columns.append(start_col) # Before OP
                     remove_columns.append(end_col+1) # After OP
-                else:
-                    remove_columns.append(start_col) # Before OP
-                    remove_columns.append(end_col+1) # After OP
+                #else:
+                    #remove_columns.append(start_col) # Before OP
+                    #remove_columns.append(end_col+1) # After OP
         if token_string.endswith('\n'):
             out_line += token_string
             if remove_columns:
@@ -286,21 +285,31 @@ def join_multiline_pairs(text, pair="()"):
         multline_match = multiline_quoted_string.search(line)
         not_quoted_string_match = not_quoted_string.search(line)
         if multline_match and not not_quoted_string_match and not quoted_string:
-            if len(line.split('"""')) > 1 or len(line.split("'''")):
-                # This is a single line that uses the triple quotes twice
-                # Treat it as if it were just a regular line:
-                output += line + '\n'
-                quoted_string = False
-            else:
-                output += line + '\n'
-                quoted_string = True
-        elif quoted_string and multiline_quoted_string.search(line):
+            if '"""' in line:
+                if len(line.split('"""')) % 2 == 0:
+                    # Begin triple double quotes
+                    output += line + '\n'
+                    quoted_string = True
+                else:
+                    # End triple double quotes
+                    output += line + '\n'
+                    quoted_string = False
+            elif "'''" in line:
+                if len(line.split("'''")) % 2 == 0:
+                    # Begin triple single quotes
+                    output += line + '\n'
+                    quoted_string = True
+                else:
+                    # End triple single quotes
+                    output += line + '\n'
+                    quoted_string = False
+        elif multline_match and quoted_string:
             output += line + '\n'
             quoted_string = False
         # Now let's focus on the lines containing our opener and/or closer:
         elif not quoted_string:
             if opener_regex.search(line) or closer_regex.search(line) or inside_pair:
-                for character in line:
+                for n, character in enumerate(line):
                     if character == opener:
                         if not escaped and not inside_quotes:
                             openers += 1
@@ -316,8 +325,12 @@ def join_multiline_pairs(text, pair="()"):
                                 openers = 0
                                 inside_pair = False
                                 output += character
+                                if n == (len(line)-1):
+                                    output += '\n'
                             else:
                                 closers += 1
+                                if openers == closers:
+                                    output += '\n'
                                 output += character
                         else:
                             escaped = False
@@ -370,10 +383,8 @@ def join_multiline_pairs(text, pair="()"):
                 output += line + '\n'
         else:
             output += line + '\n'
-
     # Clean up
     output = trailing_newlines.sub('\n', output)
-
     return output
 
 def dedent(source, use_tabs=False):
@@ -510,5 +521,5 @@ def minify(tokens, options):
     result = join_multiline_pairs(result, '{}')
     result = remove_blank_lines(result)
     result = reduce_operators(result)
-    result = source = dedent(result, use_tabs=options.tabs)
+    result = dedent(result, use_tabs=options.tabs)
     return result
