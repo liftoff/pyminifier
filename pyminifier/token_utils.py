@@ -16,8 +16,10 @@ def untokenize(tokens): ###
     Converts the output of tokenize.generate_tokens back into a human-readable
     string (that doesn't contain oddly-placed whitespace everywhere).
 
-    **Note:** Unlike tokenize.untokenize(), this function requires the 3rd and
-    4th items in each token tuple (though we can use lists *or* tuples).
+    .. note::
+
+        Unlike :meth:`tokenize.untokenize`, this function requires the 3rd and
+        4th items in each token tuple (though we can use lists *or* tuples).
     """
     out = ""
     last_lineno = -1
@@ -29,7 +31,7 @@ def untokenize(tokens): ###
         # The following two conditionals preserve indentation:
         if start_line > last_lineno:
             last_col = 0
-        if start_col > last_col:
+        if start_col > last_col and token_string != '\n':
             out += (" " * (start_col - last_col))
         out += token_string
         last_col = end_col
