@@ -64,7 +64,7 @@ something is broken.
 """
 
 # Import built-in modules
-import os, sys, re
+import os, sys, re, io
 from optparse import OptionParser
 
 # Import our own modules
@@ -420,7 +420,7 @@ def main():
                 "(https://github.com/liftoff/pyminifier)\n")
         # Either save the result to the output file or print it to stdout
         if options.outfile:
-            f = open(options.outfile, 'w', encoding='utf-8')
+            f = io.open(options.outfile, 'w', encoding='utf-8')
             f.write(result)
             f.close()
             new_filesize = os.path.getsize(options.outfile)
