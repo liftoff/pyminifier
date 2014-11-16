@@ -8,9 +8,14 @@ for scheme in INSTALL_SCHEMES.values():
 
 extra = {}
 
-if sys.version_info.major == 2:
+if isinstance(sys.version_info, tuple):
+    major = sys.version_info[0]
+else:
+    major = sys.version_info.major
+
+if major == 2:
     from distutils.command.build_py import build_py
-elif sys.version_info.major == 3:
+elif major == 3:
     extra['use_2to3'] = True # Automatically convert to Python 3; love it!
     try:
         from distutils.command.build_py import build_py_2to3 as build_py
