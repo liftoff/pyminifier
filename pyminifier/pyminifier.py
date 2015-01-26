@@ -341,7 +341,8 @@ def main():
             # Get the module name from the path
             module = os.path.split(sourcefile)[1]
             module = ".".join(module.split('.')[:-1])
-            source = open(sourcefile).read()
+            with open(sourcefile) as _sourcefile:
+                source = _sourcefile.read()
             tokens = token_utils.listified_tokenizer(source)
             if not options.nominify: # Perform minification
                 source = minification.minify(tokens, options)
@@ -373,11 +374,10 @@ def main():
                 os.mkdir(options.destdir)
             # Need the path where the script lives for the next steps:
             filepath = os.path.split(sourcefile)[1]
-            path = options.destdir + '/' + filepath # Put everything in destdir
-            f = open(path, 'w')
-            f.write(result)
-            f.close()
-            new_filesize = os.path.getsize(path)
+            outfile = os.path.join(options.destdir, filepath) # Put everything in destdir
+            with open(outfile, 'w') as _outfile:
+                _outfile.write(result)
+            new_filesize = os.path.getsize(outfile)
             cumulative_new += new_filesize
             percent_saved = round(
                 (float(new_filesize) / float(filesize)) * 100, 2)
@@ -390,7 +390,8 @@ def main():
         module = os.path.split(args[0])[1]
         module = ".".join(module.split('.')[:-1])
         filesize = os.path.getsize(args[0])
-        source = open(args[0]).read()
+        with open(args[0]) as sourcefile:
+            source = sourcefile.read()
         # Convert the tokens from a tuple of tuples to a list of lists so we can
         # update in-place.
         tokens = token_utils.listified_tokenizer(source)
@@ -420,9 +421,8 @@ def main():
                 "(https://github.com/liftoff/pyminifier)\n")
         # Either save the result to the output file or print it to stdout
         if options.outfile:
-            f = io.open(options.outfile, 'w', encoding='utf-8')
-            f.write(result)
-            f.close()
+            with open(options.outfile, 'w', encoding='utf-8') as outfile:
+                outfile.write(result)
             new_filesize = os.path.getsize(options.outfile)
             print("%s (%s) reduced to %s bytes (%s%% of original size)" % (
                 args[0], filesize, new_filesize,
