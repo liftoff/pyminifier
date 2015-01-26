@@ -309,14 +309,17 @@ def main():
         except Exception as err:
             print("Error reading %s:" % options.prepend)
             print(err)
-    # Automatically enable --obfuscate if --nonlatin (it's implied)
-    if options.use_nonlatin:
+
+    obfuscations = (options.obfuscate, options.obf_classes,
+                    options.obf_functions, options.obf_variables,
+                    options.obf_builtins, options.obf_import_methods)
+
+    # Automatically enable obfuscation if --nonlatin (implied if no explicit obfuscation is stated)
+    if options.use_nonlatin and not any(obfuscations):
         options.obfuscate = True
     if len(args) > 1: # We're dealing with more than one file
         name_generator = None # So we can tell if we need to obfuscate
-        if options.obfuscate or options.obf_classes \
-           or options.obf_functions or options.obf_variables \
-           or options.obf_builtins or options.obf_import_methods:
+        if any(obfuscations):
             # Put together that will be used for all obfuscation functions:
             identifier_length = int(options.replacement_length)
             if options.use_nonlatin:
