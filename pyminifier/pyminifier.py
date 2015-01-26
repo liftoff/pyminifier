@@ -81,6 +81,8 @@ if sys.version_info.major == 3:
         import lzma
     except ImportError:
         pass
+else:
+    from io import open
 
 # Regexes
 multiline_indicator = re.compile('\\\\(\s*#.*)?\n')
