@@ -13,8 +13,11 @@ except ImportError: # Ahh, Python 3
 
 # Globals
 py3 = False
-if sys.version_info.major == 3:
-    py3 = True
+
+if not isinstance(sys.version_info.major, tuple):
+    if sys.version_info.major == 3:
+        py3 = True
+
 shebang = re.compile('^#\!.*$')
 encoding = re.compile(".*coding[:=]\s*([-\w.]+)")
 # __builtins__ is different for every module so we need a hard-coded list:
