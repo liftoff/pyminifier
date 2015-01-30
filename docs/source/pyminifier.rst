@@ -3,6 +3,6 @@
 
 .. moduleauthor:: Dan McDougall (daniel.mcdougall@liftoffsoftware.com)
 
-.. automodule:: pyminifier.pyminifier
+.. automodule:: pyminifier
     :members:
     :private-members:
