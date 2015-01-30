@@ -233,13 +233,13 @@ def reduce_operators(source):
         last_lineno = end_line
     # This makes sure to capture the last line if it doesn't end in a newline:
     out += out_line
-    # The tokenize module doesn't recognize @ sign before a decorator
+    # NOTE: The tokenize module doesn't recognize @ sign before a decorator
     return out
 
-def join_multiline_pairs(text, pair="()"):
+def join_multiline_pairs(source, pair="()"):
     """
     Finds and removes newlines in multiline matching pairs of characters in
-    *text*.
+    *source*.
 
     By default it joins parens () but it will join any two characters given via
     the *pair* variable.
@@ -260,132 +260,27 @@ def join_multiline_pairs(text, pair="()"):
         test = (            "This is inside a multi-line pair of parentheses"        )
 
     """
-    # Readability variables
     opener = pair[0]
     closer = pair[1]
-
-    # Tracking variables
-    inside_pair = False
-    inside_quotes = False
-    inside_double_quotes = False
-    inside_single_quotes = False
-    quoted_string = False
-    openers = 0
-    closers = 0
-    linecount = 0
-
-    # Regular expressions
-    opener_regex = re.compile('\%s' % opener)
-    closer_regex = re.compile('\%s' % closer)
-
-    output = ""
-    for line in text.split('\n'):
-        escaped = False
-        # First we rule out multi-line strings
-        multline_match = multiline_quoted_string.search(line)
-        not_quoted_string_match = not_quoted_string.search(line)
-        if multline_match and not not_quoted_string_match and not quoted_string:
-            if '"""' in line:
-                if len(line.split('"""')) % 2 == 0:
-                    # Begin triple double quotes
-                    output += line + '\n'
-                    quoted_string = True
-                else:
-                    # End triple double quotes
-                    output += line + '\n'
-                    quoted_string = False
-            elif "'''" in line:
-                if len(line.split("'''")) % 2 == 0:
-                    # Begin triple single quotes
-                    output += line + '\n'
-                    quoted_string = True
-                else:
-                    # End triple single quotes
-                    output += line + '\n'
-                    quoted_string = False
-        elif multline_match and quoted_string:
-            output += line + '\n'
-            quoted_string = False
-        # Now let's focus on the lines containing our opener and/or closer:
-        elif not quoted_string:
-            if opener_regex.search(line) or closer_regex.search(line) or inside_pair:
-                for n, character in enumerate(line):
-                    if character == opener:
-                        if not escaped and not inside_quotes:
-                            openers += 1
-                            inside_pair = True
-                            output += character
-                        else:
-                            escaped = False
-                            output += character
-                    elif character == closer:
-                        if not escaped and not inside_quotes:
-                            if openers and openers == (closers + 1):
-                                closers = 0
-                                openers = 0
-                                inside_pair = False
-                                output += character
-                                if n == (len(line)-1):
-                                    output += '\n'
-                            else:
-                                closers += 1
-                                if openers == closers:
-                                    output += '\n'
-                                output += character
-                        else:
-                            escaped = False
-                            output += character
-                    elif character == '\\':
-                        if escaped:
-                            escaped = False
-                            output += character
-                        else:
-                            escaped = True
-                            output += character
-                    elif character == '"' and escaped:
-                        output += character
-                        escaped = False
-                    elif character == "'" and escaped:
-                        output += character
-                        escaped = False
-                    elif character == '"' and inside_quotes:
-                        if inside_single_quotes:
-                            output += character
-                        else:
-                            inside_quotes = False
-                            inside_double_quotes = False
-                            output += character
-                    elif character == "'" and inside_quotes:
-                        if inside_double_quotes:
-                            output += character
-                        else:
-                            inside_quotes = False
-                            inside_single_quotes = False
-                            output += character
-                    elif character == '"' and not inside_quotes:
-                        inside_quotes = True
-                        inside_double_quotes = True
-                        output += character
-                    elif character == "'" and not inside_quotes:
-                        inside_quotes = True
-                        inside_single_quotes = True
-                        output += character
-                    elif character == ' ' and inside_pair and not inside_quotes:
-                        if not output[-1] in [' ', opener]:
-                            output += ' '
-                    else:
-                        if escaped:
-                            escaped = False
-                        output += character
-                if inside_pair == False:
-                    output += '\n'
-            else:
-                output += line + '\n'
+    io_obj = io.StringIO(source)
+    out_tokens = []
+    open_count = 0
+    for tok in tokenize.generate_tokens(io_obj.readline):
+        #print(repr(tok))
+        token_type = tok[0]
+        token_string = tok[1]
+        if token_type == tokenize.OP and token_string in pair:
+            if token_string == opener:
+                open_count += 1
+            elif token_string == closer:
+                open_count -= 1
+            out_tokens.append(tok)
+        elif token_type in (tokenize.NL, tokenize.NEWLINE):
+            if open_count == 0:
+                out_tokens.append(tok)
         else:
-            output += line + '\n'
-    # Clean up
-    output = trailing_newlines.sub('\n', output)
-    return output
+            out_tokens.append(tok)
+    return token_utils.untokenize(out_tokens)
 
 def dedent(source, use_tabs=False):
     """
