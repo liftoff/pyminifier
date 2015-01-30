@@ -38,7 +38,6 @@ setup(
     author_email="daniel.mcdougall@liftoffsoftware.com",
     url="https://github.com/liftoff/pyminifier",
     license="Proprietary",
-    py_modules=["pyminifier"],
     packages=['pyminifier'],
     classifiers=[
         "Environment :: Console",
@@ -60,8 +59,9 @@ setup(
     provides=['pyminifier'],
     entry_points = {
         'console_scripts': [
-            'pyminifier = pyminifier.pyminifier:main'
-        ]
+            'pyminifier = pyminifier.__main__:main'
+        ],
     },
+    test_suite = "tests",
     **extra
 )
