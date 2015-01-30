@@ -26,7 +26,7 @@ left_of_equals = re.compile('^.*?=')
 double_quoted_string = re.compile(r'((?<!\\)".*?(?<!\\)")')
 single_quoted_string = re.compile(r"((?<!\\)'.*?(?<!\\)')")
 single_line_single_quoted_string = re.compile(r"((?<!\\)'''.*?(?<!\\)''')")
-single_line_double_quoted_string = re.compile(r"((?<!\\)'''.*?(?<!\\)''')")
+single_line_double_quoted_string = re.compile(r'((?<!\\)""".*?(?<!\\)""")')
 
 def remove_comments(tokens):
     """
