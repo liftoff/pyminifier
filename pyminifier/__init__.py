@@ -284,5 +284,3 @@ def pyminify(options, *files):
                 round(float(new_filesize)/float(filesize) * 100, 2)))
         else:
             print(result)
-
-
