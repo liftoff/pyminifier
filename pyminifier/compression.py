@@ -219,7 +219,7 @@ def zip_pack(filepath, options):
         if options.use_nonlatin:
             if sys.version_info[0] == 3:
                 name_generator = obfuscate.obfuscation_machine(
-                    use_unicode=True, count=identifier_length
+                    use_unicode=True, identifier_length=identifier_length
                 )
             else:
                 print(
@@ -227,7 +227,7 @@ def zip_pack(filepath, options):
                 sys.exit(2)
         else:
             name_generator = obfuscate.obfuscation_machine(
-                count=identifier_length)
+                identifier_length=identifier_length)
         table =[{}]
     included_modules = []
     for module in local_modules:
