@@ -189,7 +189,6 @@ def reduce_operators(source):
     joining_strings = False
     new_string = ""
     for tok in tokenize.generate_tokens(io_obj.readline):
-        #print(tok)
         token_type = tok[0]
         token_string = tok[1]
         start_line, start_col = tok[2]
@@ -222,7 +221,6 @@ def reduce_operators(source):
             if joining_strings:
                 # NOTE: Using triple quotes so that this logic works with
                 # mixed strings using both single quotes and double quotes.
-                #print("new_string: %s" % repr(new_string))
                 out += "'''" + new_string + "'''"
                 joining_strings = False
         if not joining_strings:
@@ -262,7 +260,6 @@ def join_multiline_pairs(source, pair="()"):
     out_tokens = []
     open_count = 0
     for tok in tokenize.generate_tokens(io_obj.readline):
-        #print(repr(tok))
         token_type = tok[0]
         token_string = tok[1]
         if token_type == tokenize.OP and token_string in pair:
