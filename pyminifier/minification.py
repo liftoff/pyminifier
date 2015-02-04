@@ -5,7 +5,7 @@ Module for minification functions.
 """
 
 # Import built-in modules
-import re, tokenize
+import re, tokenize, keyword
 try:
     import cStringIO as io
 except ImportError: # We're using Python 3
@@ -173,67 +173,63 @@ def reduce_operators(source):
 
         def foo(foo,bar,blah):
             test="This is a %s"%foo
+
+    ..  note::
+
+        Also removes trailing commas and joins disjointed strings like
+        ``("foo" "bar")``.
     """
     io_obj = io.StringIO(source)
-    remove_columns = []
-    out = ""
-    out_line = ""
-    prev_toktype = tokenize.INDENT
     prev_tok = None
+    out_tokens = []
+    out = ""
     last_lineno = -1
     last_col = 0
-    lshift = 1
+    nl_types = (tokenize.NL, tokenize.NEWLINE)
+    joining_strings = False
+    new_string = ""
     for tok in tokenize.generate_tokens(io_obj.readline):
+        #print(tok)
         token_type = tok[0]
         token_string = tok[1]
         start_line, start_col = tok[2]
         end_line, end_col = tok[3]
-        ltext = tok[4]
         if start_line > last_lineno:
             last_col = 0
-        if start_col > last_col:
-            out_line += (" " * (start_col - last_col))
-        if token_type == tokenize.OP:
-            # Operators that begin a line such as @ or open parens should be
-            # left alone:
-            start_of_line_types = [ # These indicate we're starting a new line
-                tokenize.NEWLINE, tokenize.DEDENT, tokenize.INDENT]
-            prev_tok_string = prev_token[1]
-            if prev_toktype not in start_of_line_types:
-                if token_string == '.' and prev_tok_string != 'from':
-                    # This is just a regular operator; remove spaces
-                    remove_columns.append(start_col) # Before OP
-                    remove_columns.append(end_col+1) # After OP
-                #else:
-                    #remove_columns.append(start_col) # Before OP
-                    #remove_columns.append(end_col+1) # After OP
-        if token_string.endswith('\n'):
-            out_line += token_string
-            if remove_columns:
-                for col in remove_columns:
-                    col = col - lshift
-                    try:
-            # This was really handy for debugging (looks nice, worth saving):
-                        #print(out_line + (" " * col) + "^")
-                        # The above points to the character we're looking at
-                        if out_line[col] == " ": # Only if it is a space
-                            out_line = out_line[:col] + out_line[col+1:]
-                            lshift += 1 # Re-align future changes on this line
-                    except IndexError: # Reached and end of line, no biggie
-                        pass
-            out += out_line
-            remove_columns = []
-            out_line = ""
-            lshift = 1
+        if token_type != tokenize.OP:
+            if start_col > last_col and token_type not in nl_types:
+                if prev_tok[0] != tokenize.OP:
+                    out += (" " * (start_col - last_col))
+            if token_type == tokenize.STRING:
+                if prev_tok[0] == tokenize.STRING:
+                    # Join the strings into one
+                    string_type = token_string[0] # '' or ""
+                    prev_string_type = prev_tok[1][0]
+                    out = out.rstrip(" ") # Remove any spaces we inserted prev
+                    if not joining_strings:
+                        # Remove prev token and start the new combined string
+                        out = out[:(len(out)-len(prev_tok[1]))]
+                        prev_string = prev_tok[1].strip(prev_string_type)
+                        new_string = (
+                            prev_string + token_string.strip(string_type))
+                        joining_strings = True
+                    else:
+                        new_string += token_string.strip(string_type)
         else:
-            out_line += token_string
-        prev_toktype = token_type
-        prev_token = tok
+            if token_string in ('}', ')', ']'):
+                if prev_tok[1] == ',':
+                    out = out.rstrip(',')
+            if joining_strings:
+                # NOTE: Using triple quotes so that this logic works with
+                # mixed strings using both single quotes and double quotes.
+                #print("new_string: %s" % repr(new_string))
+                out += "'''" + new_string + "'''"
+                joining_strings = False
+        if not joining_strings:
+            out += token_string
         last_col = end_col
         last_lineno = end_line
-    # This makes sure to capture the last line if it doesn't end in a newline:
-    out += out_line
-    # NOTE: The tokenize module doesn't recognize @ sign before a decorator
+        prev_tok = tok
     return out
 
 def join_multiline_pairs(source, pair="()"):
@@ -323,7 +319,10 @@ def dedent(source, use_tabs=False):
             continue
         indentation = indent_char * indentation_level
         if start_line > prev_start_line:
-            out += indentation + str(token_string)
+            if token_string in (',', '.'):
+                out += str(token_string)
+            else:
+                out += indentation + str(token_string)
         elif start_col > last_col:
             out += indent_char + str(token_string)
         else:
