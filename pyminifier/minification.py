@@ -223,6 +223,10 @@ def reduce_operators(source):
                 # mixed strings using both single quotes and double quotes.
                 out += "'''" + new_string + "'''"
                 joining_strings = False
+            if token_string == '@': # Decorators need special handling
+                if prev_tok[0] == tokenize.NEWLINE:
+                    # Ensure it gets indented properly
+                    out += (" " * (start_col - last_col))
         if not joining_strings:
             out += token_string
         last_col = end_col
