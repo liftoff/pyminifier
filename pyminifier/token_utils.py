@@ -11,7 +11,7 @@ try:
 except ImportError: # We're using Python 3
     import io
 
-def untokenize(tokens): ###
+def untokenize(tokens):
     """
     Converts the output of tokenize.generate_tokens back into a human-readable
     string (that doesn't contain oddly-placed whitespace everywhere).

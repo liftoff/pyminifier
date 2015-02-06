@@ -120,6 +120,7 @@ def find_obfuscatables(tokens, obfunc, ignore_length=False):
     keyword_args = analyze.enumerate_keyword_args(tokens)
     global imported_modules
     imported_modules = analyze.enumerate_imports(tokens)
+    #print("imported_modules: %s" % imported_modules)
     skip_line = False
     skip_next = False
     obfuscatables = []
@@ -183,6 +184,8 @@ def obfuscatable_variable(tokens, index, ignore_length=False):
     if next_tok_string == ".":
         if token_string in imported_modules:
             return None
+    if prev_tok_string == 'import':
+        return '__skipline__'
     if prev_tok_string == ".":
         return '__skipnext__'
     if prev_tok_string == "for":
@@ -194,7 +197,7 @@ def obfuscatable_variable(tokens, index, ignore_length=False):
         return None
     if token_string in ["def", "class", 'if', 'elif', 'import']:
         return '__skipline__'
-    if prev_tok_type != tokenize.INDENT and '=' not in line:
+    if prev_tok_type != tokenize.INDENT and next_tok_string != '=':
         return '__skipline__'
     if not ignore_length:
         if len(token_string) < 3:
@@ -334,7 +337,10 @@ def replace_obfuscatables(module, tokens, obfunc, replace, name_generator, table
             elif result == '__comma__':
                 right_of_equal = False
             elif result == '__right_of_equal__':
-                right_of_equal = True
+                # We only care if we're right of the equal sign outside of
+                # parens (which indicates arguments)
+                if not inside_parens:
+                    right_of_equal = True
             else:
                 if table: # Save it for later use in other files
                     combined_name = "%s.%s" % (module, token_string)
@@ -575,8 +581,11 @@ def obfuscate_global_import_methods(module, tokens, name_generator, table=None):
     to be looked up there before generating a new unique name.
     """
     global_imports = analyze.enumerate_global_imports(tokens)
+    #print("global_imports: %s" % global_imports)
     local_imports = analyze.enumerate_local_modules(tokens, os.getcwd())
+    #print("local_imports: %s" % local_imports)
     module_methods = analyze.enumerate_import_methods(tokens)
+    #print("module_methods: %s" % module_methods)
     # Make a 1-to-1 mapping dict of module_method<->replacement:
     if table:
         replacement_dict = {}
@@ -667,8 +676,7 @@ def obfuscate(module, tokens, options, name_generator=None, table=None):
             ignore_length = True
             if sys.version_info[0] == 3:
                 name_generator = obfuscation_machine(
-                    use_unicode=True, identifier_length=identifier_length
-                )
+                    use_unicode=True, identifier_length=identifier_length)
             else:
                 print(
                     "ERROR: You can't use nonlatin characters without Python 3")
@@ -704,7 +712,6 @@ def obfuscate(module, tokens, options, name_generator=None, table=None):
             replace_obfuscatables(
                 module, tokens, obfuscate_class, _class, name_generator, table)
         obfuscate_global_import_methods(module, tokens, name_generator, table)
-        #print("# table: \n%s" % table)
         obfuscate_builtins(module, tokens, name_generator, table)
     else:
         if options.obf_classes:

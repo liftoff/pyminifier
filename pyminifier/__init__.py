@@ -5,8 +5,8 @@
 # For license information see LICENSE.txt
 
 # Meta
-__version__ = '2.1'
-__version_info__ = (2, 1)
+__version__ = '2.2'
+__version_info__ = (2, 2)
 __license__ = "GPLv3" # See LICENSE.txt
 __author__ = 'Dan McDougall <daniel.mcdougall@liftoffsoftware.com>'
 
@@ -25,7 +25,9 @@ Performs the following:
     * Removes docstrings.
     * Removes comments.
     * Minimizes code indentation.
+    * Removes trailing commas.
     * Joins multiline pairs of parentheses, braces, and brackets (and removes extraneous whitespace within).
+    * Joins disjointed strings like, ``("some" "disjointed" "string")`` into single strings: ``('''some disjointed string''')
     * Preserves shebangs and encoding info (e.g. "# -- coding: utf-8 --").
     * Optionally, produces a bzip2 or gzip-compressed self-extracting python script containing the minified source for ultimate minification. *Added in version 1.4*
     * Optionally, obfuscates the code using the shortest possible combination of letters and numbers for one or all of class names, function/method names, and variables. The options are ``--obfuscate`` or ``-O`` to obfuscate everything, ``--obfuscate-variables``, ``--obfuscate-functions``, and ``--obfuscate-classes`` to obfuscate things individually (say, if you wanted to keep your module usable by external programs).  *Added in version 2.0*
@@ -66,6 +68,7 @@ something is broken.
 # Import built-in modules
 import os, sys, re, io
 from optparse import OptionParser
+from collections import Iterable
 
 # Import our own modules
 from . import minification
@@ -132,16 +135,37 @@ def test_function():
     test_string_inside_operators = imaginary_function(
         "This string was indented but the tokenizer won't see it that way."
     ) # To understand how this could mess up docstring removal code see the
-    # minification.minification.remove_comments_and_docstrings() function starting at this line:
+    # minification.minification.remove_comments_and_docstrings() function
+    # starting at this line:
     #     "elif token_type == tokenize.STRING:"
     # This tests remove_extraneous_spaces():
     this_line_has_leading_indentation    = '''<--That extraneous space should be
                                               removed''' # But not these spaces
 
-def pyminify(options, *files):
+def is_iterable(obj):
+    """
+    Returns `True` if *obj* is iterable but *not* if *obj* is a string, bytes,
+    or a bytearray.
+    """
+    if isinstance(obj, (str, bytes, bytearray)):
+        return False
+    return isinstance(obj, Iterable)
+
+def pyminify(options, files):
+    """
+    Given an *options* object (from `optparse.OptionParser` or similar),
+    performs minification and/or obfuscation on the given *files* (any iterable
+    containing file paths) based on said *options*.
+
+    All accepted options can　be listed by running ``python __main__.py -h`` or
+    examining the :py:func:`__init__.main` function.
+    """
     global name_generator
-
-
+    if not is_iterable(files):
+        print(
+            "Error: The 'files' argument must be a list, tuple, etc of files.  "
+            "Strings and bytes won't work.")
+        sys.exit(1)
     if options.pyz:
         # Check to make sure we were only passed one script (only one at a time)
         if len(files) > 1:
@@ -166,7 +190,8 @@ def pyminify(options, *files):
                     options.obf_functions, options.obf_variables,
                     options.obf_builtins, options.obf_import_methods)
 
-    # Automatically enable obfuscation if --nonlatin (implied if no explicit obfuscation is stated)
+    # Automatically enable obfuscation if --nonlatin (implied if no explicit
+    # obfuscation is stated)
     if options.use_nonlatin and not any(obfuscations):
         options.obfuscate = True
     if len(files) > 1: # We're dealing with more than one file
@@ -212,7 +237,10 @@ def pyminify(options, *files):
                     table=table
                 )
             # Convert back to text
-            result = token_utils.untokenize(tokens)
+            result = ''
+            if prepend:
+                result += prepend
+            result += token_utils.untokenize(tokens)
             # Compress it if we were asked to do so
             if options.bzip2:
                 result = compression.bz2_pack(result)
@@ -236,16 +264,19 @@ def pyminify(options, *files):
             cumulative_new += new_filesize
             percent_saved = round(
                 (float(new_filesize) / float(filesize)) * 100, 2)
-            print("%s (%s) reduced to %s bytes (%s%% of original size)" % (
-                sourcefile, filesize, new_filesize, percent_saved))
-        print("Overall size reduction: %s%% of original size" %
-              round((float(cumulative_new) / float(cumulative_size) * 100), 2))
+            print((
+                "{sourcefile} ({filesize}) reduced to {new_filesize} bytes "
+                "({percent_saved}% of original size)").format(**locals()))
+        p_saved = round(
+            (float(cumulative_new) / float(cumulative_size) * 100), 2)
+        print("Overall size reduction: {0}% of original size".format(p_saved))
     else:
         # Get the module name from the path
-        module = os.path.split(files[0])[1]
+        _file = files[0]
+        module = os.path.split(_file)[1]
         module = ".".join(module.split('.')[:-1])
-        filesize = os.path.getsize(files[0])
-        source = open(files[0]).read()
+        filesize = os.path.getsize(_file)
+        source = open(_file).read()
         # Convert the tokens from a tuple of tuples to a list of lists so we can
         # update in-place.
         tokens = token_utils.listified_tokenizer(source)
@@ -262,7 +293,10 @@ def pyminify(options, *files):
                 identifier_length=identifier_length)
             obfuscate.obfuscate(module, tokens, options)
         # Convert back to text
-        result = token_utils.untokenize(tokens)
+        result = ''
+        if prepend:
+            result += prepend
+        result += token_utils.untokenize(tokens)
         # Compress it if we were asked to do so
         if options.bzip2:
             result = compression.bz2_pack(result)
@@ -279,8 +313,9 @@ def pyminify(options, *files):
             f.write(result)
             f.close()
             new_filesize = os.path.getsize(options.outfile)
-            print("%s (%s) reduced to %s bytes (%s%% of original size)" % (
-                files[0], filesize, new_filesize,
-                round(float(new_filesize)/float(filesize) * 100, 2)))
+            percent_saved = round(float(new_filesize)/float(filesize) * 100, 2)
+            print((
+                "{_file} ({filesize}) reduced to {new_filesize} bytes "
+                "({percent_saved}% of original size)".format(**locals())))
         else:
             print(result)

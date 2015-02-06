@@ -14,7 +14,13 @@ if sys.version_info.major == 3:
         pass
 
 def main():
+    """
+    Sets up our command line options, prints the usage/help (if warranted), and
+    runs :py:func:`pyminifier.pyminify` with the given command line options.
+    """
     usage = '%prog [options] "<input file>"'
+    if '__main__.py' in sys.argv[0]: # python -m pyminifier
+        usage = 'pyminifier [options] "<input file>"'
     parser = OptionParser(usage=usage, version=__version__)
     parser.disable_interspersed_args()
     parser.add_option(
@@ -39,14 +45,14 @@ def main():
         dest="nominify",
         default=False,
         help="Don't bother minifying (only used with --pyz).",
-        )
+    )
     parser.add_option(
         "--use-tabs",
         action="store_true",
         dest="tabs",
         default=False,
         help="Use tabs for indentation instead of spaces.",
-        )
+    )
     parser.add_option(
         "--bzip2",
         action="store_true",
@@ -157,15 +163,11 @@ def main():
         ),
         metavar="<file path>"
     )
-    options, args = parser.parse_args()
-    try:
-        pyz_file = args[0]
-    except Exception as err: # Note: This syntax requires Python 2.6+
-        print(err) # Just in case it is something wierd
+    options, files = parser.parse_args()
+    if not files:
         parser.print_help()
         sys.exit(2)
-
-    pyminify(options, pyz_file)
+    pyminify(options, files)
 
 
 if __name__ == "__main__":

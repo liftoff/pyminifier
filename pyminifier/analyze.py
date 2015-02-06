@@ -202,35 +202,44 @@ def enumerate_imports(tokens):
     """
     Iterates over *tokens* and returns a list of all imported modules.
 
-    **Note:** This is intelligent about the use of the 'as' keyword.
+    .. note:: This ignores imports using the 'as' and 'from' keywords.
     """
     imported_modules = []
     import_line = False
+    from_import = False
     for index, tok in enumerate(tokens):
         token_type = tok[0]
         token_string = tok[1]
         if token_type == tokenize.NEWLINE:
             import_line = False
+            from_import = False
         elif token_string == "import":
             import_line = True
+        elif token_string == "from":
+            from_import = True
         elif import_line:
             if token_type == tokenize.NAME and tokens[index+1][1] != 'as':
-                if token_string not in reserved_words:
-                    if token_string not in imported_modules:
-                        imported_modules.append(token_string)
+                if not from_import:
+                    if token_string not in reserved_words:
+                        if token_string not in imported_modules:
+                            imported_modules.append(token_string)
     return imported_modules
 
 def enumerate_global_imports(tokens):
     """
     Returns a list of all globally imported modules (skips modules imported
-    inside of classes, methods, or functions).
+    inside of classes, methods, or functions).  Example::
 
-    Example:
         >>> enumerate_global_modules(tokens)
         ['sys', 'os', 'tokenize', 're']
+
+    .. note::
+
+        Does not enumerate imports using the 'from' or 'as' keywords.
     """
     imported_modules = []
     import_line = False
+    from_import = False
     parent_module = ""
     function_count = 0
     indentation = 0
@@ -243,6 +252,7 @@ def enumerate_global_imports(tokens):
             indentation -= 1
         elif token_type == tokenize.NEWLINE:
             import_line = False
+            from_import = False
         elif token_type == tokenize.NAME:
             if token_string in ["def", "class"]:
                 function_count += 1
@@ -251,15 +261,20 @@ def enumerate_global_imports(tokens):
             elif function_count >= indentation:
                 if token_string == "import":
                     import_line = True
+                elif token_string == "from":
+                    from_import = True
                 elif import_line:
-                    if token_type == tokenize.NAME and tokens[index+1][1] != 'as':
-                        if token_string not in reserved_words:
+                    if token_type == tokenize.NAME \
+                        and tokens[index+1][1] != 'as':
+                        if not from_import \
+                            and token_string not in reserved_words:
                             if token_string not in imported_modules:
                                 if tokens[index+1][1] == '.': # module.module
                                     parent_module = token_string + '.'
                                 else:
                                     if parent_module:
-                                        module_string = parent_module + token_string
+                                        module_string = (
+                                            parent_module + token_string)
                                         imported_modules.append(module_string)
                                         parent_module = ''
                                     else:
@@ -335,7 +350,6 @@ def enumerate_builtins(tokens):
     for index, tok in enumerate(tokens):
         token_type = tok[0]
         token_string = tok[1]
-        #if token_type == tokenize.NAME:
         if token_string in builtins:
             # Note: I need to test if print can be replaced in Python 3
             special_special = ['print'] # Print is special in Python 2
