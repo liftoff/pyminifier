@@ -44,8 +44,9 @@ import os, sys, tempfile, shutil
 from . import analyze, token_utils, minification, obfuscate
 
 py3 = False
-if sys.version_info.major == 3:
-    py3 = True
+if not isinstance(sys.version_info, tuple):
+    if sys.version_info.major == 3:
+        py3 = True
 
 def bz2_pack(source):
     """
