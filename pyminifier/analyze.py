@@ -413,7 +413,7 @@ def enumerate_local_modules(tokens, path):
                     module = "%s.%s" % (module_tree, f)
                 else:
                     module = f
-                if module in modules:
+                if not module in modules:
                     local_modules.append(module)
     return local_modules
 
