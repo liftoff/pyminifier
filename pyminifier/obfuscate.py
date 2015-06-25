@@ -13,8 +13,9 @@ from itertools import permutations
 from . import analyze
 from . import token_utils
 
-if sys.version_info.major == 3:
-    unichr = chr # So we can support both 2 and 3
+if not isinstance(sys.version_info, tuple):
+    if sys.version_info.major == 3:
+        unichr = chr # So we can support both 2 and 3
 
 try:
     unichr(0x10000) # Will throw a ValueError on narrow Python builds

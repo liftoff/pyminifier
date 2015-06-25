@@ -14,7 +14,7 @@ except ImportError: # Ahh, Python 3
 # Globals
 py3 = False
 
-if not isinstance(sys.version_info.major, tuple):
+if not isinstance(sys.version_info, tuple):
     if sys.version_info.major == 3:
         py3 = True
 
