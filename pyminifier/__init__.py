@@ -217,7 +217,10 @@ def pyminify(options, files):
         cumulative_new = 0 # Ditto
         for sourcefile in files:
             # Record how big the file is so we can compare afterwards
-            filesize = os.path.getsize(sourcefile)
+            try:
+                filesize = os.path.getsize(sourcefile)
+            except OSError as e: # incase there are no files in dir
+                continue
             cumulative_size += filesize
             # Get the module name from the path
             module = os.path.split(sourcefile)[1]
@@ -267,8 +270,10 @@ def pyminify(options, files):
             print((
                 "{sourcefile} ({filesize}) reduced to {new_filesize} bytes "
                 "({percent_saved}% of original size)").format(**locals()))
-        p_saved = round(
-            (float(cumulative_new) / float(cumulative_size) * 100), 2)
+        if cumulative_size != 0:
+            p_saved = round((float(cumulative_new) / float(cumulative_size) * 100), 2)
+        else:
+            p_saved = 0
         print("Overall size reduction: {0}% of original size".format(p_saved))
     else:
         # Get the module name from the path
