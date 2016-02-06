@@ -117,6 +117,9 @@ def find_obfuscatables(tokens, obfunc, ignore_length=False):
     If *ignore_length* is ``True`` then single-character obfuscatables will
     be obfuscated anyway (even though it wouldn't save any space).
     """
+    inside_class = False
+    indent = 0
+    class_indent = 0
     global keyword_args
     keyword_args = analyze.enumerate_keyword_args(tokens)
     global imported_modules
@@ -127,11 +130,24 @@ def find_obfuscatables(tokens, obfunc, ignore_length=False):
     obfuscatables = []
     for index, tok in enumerate(tokens):
         token_type = tok[0]
+        token_string = tok[1]
         if token_type == tokenize.NEWLINE:
             skip_line = False
+        elif token_type == tokenize.INDENT:
+            indent += 1
+        elif token_type == tokenize.DEDENT:
+            indent -= 1
+            if inside_class and class_indent == indent:
+                class_indent = 0
+                inside_class = False
+        if token_string == "class":
+            class_indent = indent
+            class_name = tokens[index+1][1]
+            inside_class = class_name
         if skip_line:
             continue
-        result = obfunc(tokens, index, ignore_length=ignore_length)
+        if not inside_class or class_indent != (indent - 1): # dont look at class static attributes
+            result = obfunc(tokens, index, ignore_length=ignore_length)
         if result:
             if skip_next:
                 skip_next = False
