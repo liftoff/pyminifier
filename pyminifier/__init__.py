@@ -195,7 +195,7 @@ def pyminify(options, files):
     # obfuscation is stated)
     if options.use_nonlatin and not any(obfuscations):
         options.obfuscate = True
-    if len(files) > 1: # We're dealing with more than one file
+    if len(files) > 1 or options.destdir: # We're dealing with more than one file, or the destdir is provided for result
         name_generator = None # So we can tell if we need to obfuscate
         if any(obfuscations):
             # Put together that will be used for all obfuscation functions:
@@ -217,7 +217,10 @@ def pyminify(options, files):
         cumulative_new = 0 # Ditto
         for sourcefile in files:
             # Record how big the file is so we can compare afterwards
-            filesize = os.path.getsize(sourcefile)
+            try:
+                filesize = os.path.getsize(sourcefile)
+            except OSError as e: # incase there are no files in dir
+                continue
             cumulative_size += filesize
             # Get the module name from the path
             module = os.path.split(sourcefile)[1]
@@ -267,8 +270,10 @@ def pyminify(options, files):
             print((
                 "{sourcefile} ({filesize}) reduced to {new_filesize} bytes "
                 "({percent_saved}% of original size)").format(**locals()))
-        p_saved = round(
-            (float(cumulative_new) / float(cumulative_size) * 100), 2)
+        if cumulative_size != 0:
+            p_saved = round((float(cumulative_new) / float(cumulative_size) * 100), 2)
+        else:
+            p_saved = 0
         print("Overall size reduction: {0}% of original size".format(p_saved))
     else:
         # Get the module name from the path
@@ -313,7 +318,7 @@ def pyminify(options, files):
             f.write(result)
             f.close()
             new_filesize = os.path.getsize(options.outfile)
-            percent_saved = round(float(new_filesize)/float(filesize) * 100, 2)
+            percent_saved = round((float(new_filesize) / float(filesize)) * 100, 2) if float(filesize)!=0 else 0
             print((
                 "{_file} ({filesize}) reduced to {new_filesize} bytes "
                 "({percent_saved}% of original size)".format(**locals())))
