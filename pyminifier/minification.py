@@ -196,10 +196,10 @@ def reduce_operators(source):
             last_col = 0
         if token_type != tokenize.OP:
             if start_col > last_col and token_type not in nl_types:
-                if prev_tok[0] != tokenize.OP:
+                if prev_tok and prev_tok[0] != tokenize.OP:
                     out += (" " * (start_col - last_col))
             if token_type == tokenize.STRING:
-                if prev_tok[0] == tokenize.STRING:
+                if prev_tok and prev_tok[0] == tokenize.STRING:
                     # Join the strings into one
                     string_type = token_string[0] # '' or ""
                     prev_string_type = prev_tok[1][0]
@@ -215,7 +215,7 @@ def reduce_operators(source):
                         new_string += token_string.strip(string_type)
         else:
             if token_string in ('}', ')', ']'):
-                if prev_tok[1] == ',':
+                if prev_tok and prev_tok[1] == ',':
                     out = out.rstrip(',')
             if joining_strings:
                 # NOTE: Using triple quotes so that this logic works with
@@ -223,7 +223,7 @@ def reduce_operators(source):
                 out += "'''" + new_string + "'''"
                 joining_strings = False
             if token_string == '@': # Decorators need special handling
-                if prev_tok[0] == tokenize.NEWLINE:
+                if prev_tok and prev_tok[0] == tokenize.NEWLINE:
                     # Ensure it gets indented properly
                     out += (" " * (start_col - last_col))
         if not joining_strings:
