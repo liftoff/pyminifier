@@ -8,6 +8,13 @@ Pyminifier is a Python code minifier, obfuscator, and compressor.
     * For the latest, complete documentation: http://liftoff.github.io/pyminifier/
     * For the latest code: https://github.com/liftoff/pyminifier
 
+Dependences
+============
+   root$ pip install pylzma
+
+
+
+
 Overview
 --------
 When you install pyminifier it should automatically add a 'pyminifier'
