@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 #
 #       Copyright 2013 Liftoff Software Corporation
 #
@@ -15,6 +15,7 @@ __author__ = 'Dan McDougall <daniel.mcdougall@liftoffsoftware.com>'
 # TODO: Add the ability to use a config file instead of just command line args.
 # TODO: Add the ability to save a file that allows for de-obfuscation later (or at least the ability to debug).
 # TODO: Separate out the individual functions of minification so that they can be chosen selectively like the obfuscation functions.
+# TODO: A conflict file entry in the windows operating system
 
 __doc__ = """\
 **Python Minifier:**  Reduces the size of (minifies) Python code for use on
@@ -67,6 +68,7 @@ something is broken.
 
 # Import built-in modules
 import os, sys, re, io
+
 from optparse import OptionParser
 from collections import Iterable
 
@@ -85,6 +87,9 @@ if not isinstance(sys.version_info, tuple):
             import lzma
         except ImportError:
             pass
+        
+# define the name of the operating system 'nt'- windows
+os_name = os.name
 
 # Regexes
 multiline_indicator = re.compile('\\\\(\s*#.*)?\n')
@@ -184,7 +189,7 @@ def pyminify(options, files):
         try:
             prepend = open(options.prepend).read()
         except Exception as err:
-            print("Error reading %s:" % options.prepend)
+            print(("Error reading %s:" % options.prepend))
             print(err)
 
     obfuscations = (options.obfuscate, options.obf_classes,
@@ -222,7 +227,10 @@ def pyminify(options, files):
             # Get the module name from the path
             module = os.path.split(sourcefile)[1]
             module = ".".join(module.split('.')[:-1])
-            source = open(sourcefile).read()
+            if os_name in ('nt',):
+                source = open(sourcefile, encoding="utf8").read()
+            else:
+                source = open(sourcefile).read()
             tokens = token_utils.listified_tokenizer(source)
             if not options.nominify: # Perform minification
                 source = minification.minify(tokens, options)
@@ -258,25 +266,31 @@ def pyminify(options, files):
             # Need the path where the script lives for the next steps:
             filepath = os.path.split(sourcefile)[1]
             path = options.destdir + '/' + filepath # Put everything in destdir
-            f = open(path, 'w')
+            if os_name in ('nt',):
+                f = open(path, 'w', encoding='utf-8')
+            else:
+                f = open(path, 'w')
             f.write(result)
             f.close()
             new_filesize = os.path.getsize(path)
             cumulative_new += new_filesize
             percent_saved = round((float(new_filesize) / float(filesize)) * 100, 2) if float(filesize)!=0 else 0
-            print((
+            print(((
                 "{sourcefile} ({filesize}) reduced to {new_filesize} bytes "
-                "({percent_saved}% of original size)").format(**locals()))
+                "({percent_saved}% of original size)").format(**locals())))
         p_saved = round(
             (float(cumulative_new) / float(cumulative_size) * 100), 2)
-        print("Overall size reduction: {0}% of original size".format(p_saved))
+        print(("Overall size reduction: {0}% of original size".format(p_saved)))
     else:
         # Get the module name from the path
         _file = files[0]
         module = os.path.split(_file)[1]
         module = ".".join(module.split('.')[:-1])
         filesize = os.path.getsize(_file)
-        source = open(_file).read()
+        if os_name in ('nt',):
+            source = open(_file, encoding='utf-8').read()
+        else:
+            source = open(_file).read()
         # Convert the tokens from a tuple of tuples to a list of lists so we can
         # update in-place.
         tokens = token_utils.listified_tokenizer(source)
@@ -318,4 +332,13 @@ def pyminify(options, files):
                 "{_file} ({filesize}) reduced to {new_filesize} bytes "
                 "({percent_saved}% of original size)".format(**locals())))
         else:
-            print(result)
+            try:
+                import pprint
+                pprint.pprint(result)
+            except Exception as inst:
+                print(inst)
+                pass            
+
+            
+
+
