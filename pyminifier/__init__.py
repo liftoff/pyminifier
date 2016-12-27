@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 #       Copyright 2013 Liftoff Software Corporation
 #
@@ -189,7 +189,7 @@ def pyminify(options, files):
         try:
             prepend = open(options.prepend).read()
         except Exception as err:
-            print(("Error reading %s:" % options.prepend))
+            print("Error reading %s:" % options.prepend)
             print(err)
 
     obfuscations = (options.obfuscate, options.obf_classes,
@@ -280,7 +280,7 @@ def pyminify(options, files):
                 "({percent_saved}% of original size)").format(**locals())))
         p_saved = round(
             (float(cumulative_new) / float(cumulative_size) * 100), 2)
-        print(("Overall size reduction: {0}% of original size".format(p_saved)))
+        print("Overall size reduction: {0}% of original size".format(p_saved))
     else:
         # Get the module name from the path
         _file = files[0]
