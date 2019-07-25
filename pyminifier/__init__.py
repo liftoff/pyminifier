@@ -5,9 +5,9 @@
 # For license information see LICENSE.txt
 
 # Meta
-__version__ = '2.2'
-__version_info__ = (2, 2)
-__license__ = "GPLv3" # See LICENSE.txt
+__version__ = '2.2.1'
+__version_info__ = (2, 2, 1)
+__license__ = "GPLv3"  # See LICENSE.txt
 __author__ = 'Dan McDougall <daniel.mcdougall@liftoffsoftware.com>'
 
 # TODO: Add the ability to mark variables, functions, classes, and methods for non-obfuscation.
@@ -67,7 +67,10 @@ something is broken.
 """
 
 # Import built-in modules
-import os, sys, re, io
+import os
+import sys
+import re
+import io
 
 from optparse import OptionParser
 from collections import Iterable
@@ -87,7 +90,7 @@ if not isinstance(sys.version_info, tuple):
             import lzma
         except ImportError:
             pass
-        
+
 # define the name of the operating system 'nt'- windows
 os_name = os.name
 
@@ -95,14 +98,18 @@ os_name = os.name
 multiline_indicator = re.compile('\\\\(\s*#.*)?\n')
 
 # The test.+() functions below are for testing pyminifier...
+
+
 def test_decorator(f):
     """Decorator that does nothing"""
     return f
 
+
 def test_reduce_operators():
     """Test the case where an operator such as an open paren starts a line"""
-    (a, b) = 1, 2 # The indentation level should be preserved
+    (a, b) = 1, 2  # The indentation level should be preserved
     pass
+
 
 def test_empty_functions():
     """
@@ -110,12 +117,14 @@ def test_empty_functions():
     This should be replaced with 'def test_empty_functions(): pass'
     """
 
+
 class test_class(object):
     "Testing indented decorators"
 
     @test_decorator
     def test_function(self):
         pass
+
 
 def test_function():
     """
@@ -125,8 +134,8 @@ def test_function():
     # This tests method obfuscation:
     method_obfuscate = test_class()
     method_obfuscate.test_function()
-    foo = ("The # character in this string should " # This comment
-           "not result in a syntax error") # ...and this one should go away
+    foo = ("The # character in this string should "  # This comment
+           "not result in a syntax error")  # ...and this one should go away
     test_multi_line_list = [
         'item1',
         'item2',
@@ -140,13 +149,14 @@ def test_function():
     # It may seem strange but the code below tests our docstring removal code.
     test_string_inside_operators = imaginary_function(
         "This string was indented but the tokenizer won't see it that way."
-    ) # To understand how this could mess up docstring removal code see the
+    )  # To understand how this could mess up docstring removal code see the
     # minification.minification.remove_comments_and_docstrings() function
     # starting at this line:
     #     "elif token_type == tokenize.STRING:"
     # This tests remove_extraneous_spaces():
-    this_line_has_leading_indentation    = '''<--That extraneous space should be
-                                              removed''' # But not these spaces
+    this_line_has_leading_indentation = '''<--That extraneous space should be
+                                              removed'''  # But not these spaces
+
 
 def is_iterable(obj):
     """
@@ -156,6 +166,7 @@ def is_iterable(obj):
     if isinstance(obj, (str, bytes, bytearray)):
         return False
     return isinstance(obj, Iterable)
+
 
 def pyminify(options, files):
     """
@@ -182,7 +193,7 @@ def pyminify(options, files):
             sys.exit(1)
         # Make our .pyz:
         compression.zip_pack(files, options)
-        return None # Make sure we don't do anything else
+        return None  # Make sure we don't do anything else
     # Read in our prepend text (if any)
     prepend = None
     if options.prepend:
@@ -200,8 +211,8 @@ def pyminify(options, files):
     # obfuscation is stated)
     if options.use_nonlatin and not any(obfuscations):
         options.obfuscate = True
-    if len(files) > 1: # We're dealing with more than one file
-        name_generator = None # So we can tell if we need to obfuscate
+    if len(files) > 1:  # We're dealing with more than one file
+        name_generator = None  # So we can tell if we need to obfuscate
         if any(obfuscations):
             # Put together that will be used for all obfuscation functions:
             identifier_length = int(options.replacement_length)
@@ -217,9 +228,9 @@ def pyminify(options, files):
             else:
                 name_generator = obfuscate.obfuscation_machine(
                     identifier_length=identifier_length)
-            table =[{}]
-        cumulative_size = 0 # For size reduction stats
-        cumulative_new = 0 # Ditto
+            table = [{}]
+        cumulative_size = 0  # For size reduction stats
+        cumulative_new = 0  # Ditto
         for sourcefile in files:
             # Record how big the file is so we can compare afterwards
             filesize = os.path.getsize(sourcefile)
@@ -232,7 +243,7 @@ def pyminify(options, files):
             else:
                 source = open(sourcefile).read()
             tokens = token_utils.listified_tokenizer(source)
-            if not options.nominify: # Perform minification
+            if not options.nominify:  # Perform minification
                 source = minification.minify(tokens, options)
             # Have to re-tokenize for obfucation (it is quick):
             tokens = token_utils.listified_tokenizer(source)
@@ -246,7 +257,7 @@ def pyminify(options, files):
                     table=table
                 )
             # Convert back to text
-            result = ''
+            result = '# -*- coding: utf-8 -*-\n'
             if prepend:
                 result += prepend
             result += token_utils.untokenize(tokens)
@@ -265,7 +276,7 @@ def pyminify(options, files):
                 os.mkdir(options.destdir)
             # Need the path where the script lives for the next steps:
             filepath = os.path.split(sourcefile)[1]
-            path = options.destdir + '/' + filepath # Put everything in destdir
+            path = options.destdir + '/' + filepath  # Put everything in destdir
             if os_name in ('nt',):
                 f = open(path, 'w', encoding='utf-8')
             else:
@@ -274,7 +285,7 @@ def pyminify(options, files):
             f.close()
             new_filesize = os.path.getsize(path)
             cumulative_new += new_filesize
-            percent_saved = round((float(new_filesize) / float(filesize)) * 100, 2) if float(filesize)!=0 else 0
+            percent_saved = round((float(new_filesize) / float(filesize)) * 100, 2) if float(filesize) != 0 else 0
             print(((
                 "{sourcefile} ({filesize}) reduced to {new_filesize} bytes "
                 "({percent_saved}% of original size)").format(**locals())))
@@ -294,7 +305,7 @@ def pyminify(options, files):
         # Convert the tokens from a tuple of tuples to a list of lists so we can
         # update in-place.
         tokens = token_utils.listified_tokenizer(source)
-        if not options.nominify: # Perform minification
+        if not options.nominify:  # Perform minification
             source = minification.minify(tokens, options)
             # Convert back to tokens in case we're obfuscating
             tokens = token_utils.listified_tokenizer(source)
@@ -327,7 +338,7 @@ def pyminify(options, files):
             f.write(result)
             f.close()
             new_filesize = os.path.getsize(options.outfile)
-            percent_saved = round(float(new_filesize)/float(filesize) * 100, 2)
+            percent_saved = round(float(new_filesize) / float(filesize) * 100, 2)
             print((
                 "{_file} ({filesize}) reduced to {new_filesize} bytes "
                 "({percent_saved}% of original size)".format(**locals())))
@@ -337,8 +348,8 @@ def pyminify(options, files):
                 pprint.pprint(result)
             except Exception as inst:
                 print(inst)
-                pass            
+                pass
 
-            
+
 
 
