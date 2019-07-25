@@ -1,6 +1,5 @@
 from optparse import OptionParser
 import sys
-
 from . import pyminify
 from . import __version__
 
@@ -13,6 +12,31 @@ if not isinstance(sys.version_info, tuple):
             import lzma
         except ImportError:
             pass
+
+import os, fnmatch, re
+
+#------------------------------------------------------------------------------
+def getsubs(dir):
+    '''Returns lists of files and folders located in the folder dir'''
+    # get all
+    dirs = []
+    files = []
+    for dirname, dirnames, filenames in os.walk(dir):
+        dirs.append(dirname)
+        for subdirname in dirnames:
+            dirs.append(os.path.join(dirname, subdirname))
+        for filename in filenames:
+            files.append(os.path.join(dirname, filename))
+    return dirs, files
+#------------------------------------------------------------------------------
+def getfilemask(f,mask):
+    '''Returns a file list from a list of files mask satisfying f'''
+    tt=[]
+    for i in f:
+        if fnmatch.fnmatch(i,mask):
+            tt.append(i)
+    return tt
+#------------------------------------------------------------------------------
 
 def main():
     """
@@ -168,7 +192,24 @@ def main():
     if not files:
         parser.print_help()
         sys.exit(2)
+        
+    tfiles = []
+    for f in files:
+        splf = os.path.split(f)
+        if splf[1].count('*'):
+            add_list_files(splf, f, tfiles)
+        else:
+            tfiles.append(f)
+    files = tfiles
+        
     pyminify(options, files)
+
+def add_list_files(splf, f, tfiles):
+    fls = getfilemask(getsubs(splf[0])[1], f)
+    if len(fls) > 0:
+        for tf in fls:
+            if os.path.split(tf)[0] == splf[0]:
+                tfiles.append(tf)
 
 
 if __name__ == "__main__":
