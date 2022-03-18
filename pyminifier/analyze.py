@@ -6,10 +6,7 @@ A module of useful functions for analyzing Python code.
 
 # Import builtins
 import os, sys, re, tokenize, keyword
-try:
-    import cStringIO as io
-except ImportError: # Ahh, Python 3
-    import io
+import io
 
 # Globals
 py3 = False

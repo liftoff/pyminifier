@@ -68,7 +68,7 @@ something is broken.
 # Import built-in modules
 import os, sys, re, io
 from optparse import OptionParser
-from collections import Iterable
+from collections.abc import Iterable
 
 # Import our own modules
 from . import minification
