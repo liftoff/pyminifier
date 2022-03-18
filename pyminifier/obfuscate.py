@@ -13,12 +13,9 @@ from itertools import permutations
 from . import analyze
 from . import token_utils
 
-if not isinstance(sys.version_info, tuple):
-    if sys.version_info.major == 3:
-        unichr = chr # So we can support both 2 and 3
 
 try:
-    unichr(0x10000) # Will throw a ValueError on narrow Python builds
+    chr(0x10000) # Will throw a ValueError on narrow Python builds
     HIGHEST_UNICODE = 0x10FFFF # 1114111
 except:
     HIGHEST_UNICODE = 0xFFFF # 65535
