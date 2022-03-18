@@ -1,13 +1,6 @@
 import sys
 import pyminifier
 from setuptools import setup
-from distutils.command.install import INSTALL_SCHEMES
-from distutils.command.build_py import build_py
-
-for scheme in INSTALL_SCHEMES.values():
-    scheme['data'] = scheme['purelib']
-
-extra = {}
 
 if isinstance(sys.version_info, tuple):
     major = sys.version_info[0]
@@ -18,14 +11,11 @@ if major == 2:
     print("Python 2 is no longer supported.")
     sys.exit(1)
 
-cmdclass = {'build_py': build_py}
-
 setup(
     name="pyminifier",
     version=pyminifier.__version__,
     description="Python code minifier, obfuscator, and compressor",
     author=pyminifier.__author__,
-    cmdclass=cmdclass,
     author_email="daniel.mcdougall@liftoffsoftware.com",
     url="https://github.com/liftoff/pyminifier",
     license="Proprietary",
@@ -54,5 +44,4 @@ setup(
         ],
     },
     test_suite = "tests",
-    **extra
 )
