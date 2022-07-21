@@ -261,9 +261,6 @@ def zip_pack(filepath, options):
             )
         # Convert back to text
         result = token_utils.untokenize(tokens)
-        result += (
-                "# Created by pyminifier "
-                "(https://github.com/liftoff/pyminifier)\n")
         # Write out to a temporary file to add to our zip
         temp = tempfile.NamedTemporaryFile(mode='w')
         temp.write(source)
