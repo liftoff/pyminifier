@@ -23,7 +23,7 @@ elif major == 3:
         print("Python 3.X support requires the 2to3 tool.")
         print(
             "It normally comes with Python 3.X but (apparenty) not on your "
-            "distribution.\nPlease find out what package you need to get 2to3"
+            "distribution.\nPlease find out what package you need to get 2to3 "
             "and install it.")
         sys.exit(1)
 
